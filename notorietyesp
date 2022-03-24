@@ -178,9 +178,9 @@ end
 
 function ItemESP(State)
 	if State == false then
-		for i,v in pairs(game.Workspace:GetChildren()) do
-			if v:IsA("Folder") then
-				for i,desc in pairs(v:GetDescendants()) do
+		for i,v in pairs(game.Workspace.Lootables:GetChildren()) do
+			if v:IsA("Model") then
+				for i,desc in pairs(v:GetChildren()) do
 					if desc:IsA("ProximityPrompt") then
 						if desc.ActionText == "TAKE" then
 							for i,x in pairs(desc.Parent:GetChildren()) do
@@ -194,8 +194,8 @@ function ItemESP(State)
 			end
 		end
 	else
-		for i,v in pairs(game.Workspace:GetChildren()) do
-			if v:IsA("Folder") then
+		for i,v in pairs(game.Workspace.Lootables:GetChildren()) do
+			if v:IsA("Model") then
 				for i,desc in pairs(v:GetDescendants()) do
 					if desc:IsA("ProximityPrompt") then
 						if desc.ActionText == "TAKE" then
@@ -257,10 +257,10 @@ function BodyESP(State)
 			Body:WaitForChild("HumanoidRootPart")
 			for i,Part in pairs(Body:GetChildren()) do
 				if Part:IsA("Part") or Part:IsA("BasePart") then
-					if Body.Name == "Guard" then
-						createESP(Part, Color3.new(0.223529, 0, 0))
-					elseif Body.Name == "Citizen" then
+					if Body:FindFirstChild("IsCitizen") then
 						createESP(Part, Color3.new(0, 0.290196, 0.0156863))
+					elseif Body:FindFirstChild("GuardRoute") then
+						createESP(Part, Color3.new(0.223529, 0, 0))
 					end
 				end
 			end
