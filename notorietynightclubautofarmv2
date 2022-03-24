@@ -1,9 +1,7 @@
-repeat wait() until #game.Players:GetChildren() >= 1 and game:IsLoaded()
-
 local queueteleport = syn and syn.queue_on_teleport
 game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
 	if State == Enum.TeleportState.Started then
-		queueteleport("https://raw.githubusercontent.com/acergamer123141/scripts/main/notorietynightclubautofarmv2")
+		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()")
 	end
 end)
 
@@ -258,7 +256,7 @@ end
 
 game:GetService("ReplicatedStorage")["RS_Package"].Remotes.PlayerReady:FireServer("Class 2")
 game:GetService("ReplicatedStorage")["RS_Package"].Remotes.PlayerReady:FireServer("Class 2", true)
-wait(12)
+wait(15)
 repeat wait() until RealCharacter
 game.ReplicatedStorage.RS_Package.Assets.Remotes.MaskOn:FireServer()
 wait(0.5)
