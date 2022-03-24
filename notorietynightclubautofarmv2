@@ -1,12 +1,19 @@
 local queueteleport = syn and syn.queue_on_teleport
 game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
 	if State == Enum.TeleportState.Started then
-		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/acergamer123141/scripts/main/notorietynightclubautofarmv2'))()")
+		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()")
 	end
 end)
 
 local faces = {"Front","Back","Bottom","Left","Right","Top"}
-local RealCharacter = game.Workspace.Criminals[game.Players.LocalPlayer.Name]
+local RealCharacter
+spawn(function()
+	game.Workspace.Criminals.ChildAdded:Connect(function(Child)
+		if Child.Name == game.Players.LocalPlayer.Name then
+			RealCharacter = game.Workspace.Criminals[game.Players.LocalPlayer.Name]
+		end
+	end)
+end)
 local BagSecuringPosition = game.Workspace.BagSecuredArea.EscapeVan.Main.CFrame
 local Connections = {}
 
@@ -264,6 +271,7 @@ for i,v in pairs(events) do
 	end
 end
 wait(12)
+repeat wait() until RealCharacter
 game.ReplicatedStorage.RS_Package.Assets.Remotes.MaskOn:FireServer()
 wait(0.5)
 nightclubFarm()
