@@ -1,0 +1,342 @@
+local faces = {"Front","Back","Bottom","Left","Right","Top"}
+local RealCharacter = game.Workspace.Criminals[game.Players.LocalPlayer.Name]
+local Connections = {
+	PoliceESP = nil,
+	BodyESP = nil,
+	CitizenESP = nil,
+	BagESP = nil
+}
+
+function TweenTP(cf)
+	local dis = (RealCharacter.Torso.Position - cf.p).Magnitude
+	local Time = 2
+	local tweenService = game:GetService("TweenService")
+	local tweenInfo = TweenInfo.new(Time, Enum.EasingStyle.Linear)
+	local tween = tweenService:Create(RealCharacter.HumanoidRootPart, tweenInfo, {CFrame = cf})
+	tween:Play()
+	tween.Completed:Wait()
+end
+
+function createESP(Part, Color)
+	if Part.Name == "HumanoidRootPart" then
+		return
+	end
+	for i = 1, #faces do
+		local SurfaceGUI = Instance.new("SurfaceGui", Part)
+		SurfaceGUI.Name = "ESPGUI"
+		SurfaceGUI.Face = Enum.NormalId[faces[i]]
+		SurfaceGUI.AlwaysOnTop = true
+
+		local Frame = Instance.new("ImageLabel", SurfaceGUI)
+		Frame.Size = UDim2.new(1,0,1,0)
+		Frame.BorderSizePixel = 0												
+		Frame.BackgroundTransparency = 0.3
+		Frame.BackgroundColor3 = Color
+	end
+end
+
+function addClass(Part, image)
+	for i,Gui in pairs(Part:GetChildren()) do
+		if Gui:IsA("SurfaceGui") and Gui.Name == "ESPGUI" then
+			Gui.ImageLabel.Image = image
+		end
+	end
+end
+
+function checkForClass(Unit)
+	-- taser http://www.roblox.com/asset/?id=517843292
+	if Unit:FindFirstChild("Lanyard") then
+		addClass(Unit.Torso, "http://www.roblox.com/asset/?id=316094415")
+	end
+end
+
+function CitizenESP(State)
+	if State == false then
+		for i,Officer in pairs(game.Workspace.Citizens:GetChildren()) do
+			for i,Part in pairs(Officer:GetChildren()) do
+				for i,Item in pairs(Part:GetChildren()) do
+					if Item.Name == "ESPGUI" then
+						Item:Destroy()
+					end
+				end
+			end
+		end
+		Connections.CitizenESP:Disconnect()
+	else
+		for i,Citizen in pairs(game.Workspace.Citizens:GetChildren()) do
+			for i,Part in pairs(Citizen:GetChildren()) do
+				if Part:IsA("Part") or Part:IsA("BasePart") then
+					createESP(Part, Color3.new(0.0156863, 1, 0))
+				end
+			end
+		end
+		Connections.CitizenESP = game.Workspace.Citizens.ChildAdded:Connect(function(Child)
+			Child:WaitForChild("HumanoidRootPart")
+			for i,Part in pairs(Child:GetChildren()) do
+				if Part:IsA("Part") or Part:IsA("BasePart") then
+					createESP(Part, Color3.new(0.0156863, 1, 0))
+				end
+			end
+		end)
+	end
+end
+
+function PoliceESP(State)
+	if State == false then
+		for i,Officer in pairs(game.Workspace.Police:GetChildren()) do
+			for i,Part in pairs(Officer:GetChildren()) do
+				for i,Item in pairs(Part:GetChildren()) do
+					if Item.Name == "ESPGUI" then
+						Item:Destroy()
+					end
+				end
+			end
+		end
+		Connections.PoliceESP:Disconnect()
+	else
+		for i,Officer in pairs(game.Workspace.Police:GetChildren()) do
+			for i,Part in pairs(Officer:GetChildren()) do
+				if Part:IsA("Part") or Part:IsA("BasePart") then
+					if Officer.Name == "Guard" then
+						createESP(Part, Color3.new(1, 0, 0.0156863))
+					else
+						createESP(Part, Color3.new(0, 0.0666667, 1))
+					end
+				end
+			end
+			checkForClass(Officer)
+		end
+		Connections.PoliceESP = game.Workspace.Police.ChildAdded:Connect(function(Child)
+			Child:WaitForChild("HumanoidRootPart")
+			for i,Part in pairs(Child:GetChildren()) do
+				if Part:IsA("Part") or Part:IsA("BasePart") then
+					if Child.Name == "Guard" then
+						createESP(Part, Color3.new(1, 0, 0.0156863))
+					else
+						createESP(Part, Color3.new(0, 0.0666667, 1))
+					end
+				end
+			end
+			checkForClass(Child)
+		end)
+	end
+end
+
+function lootEsp(State)
+	if State == false then
+		for i,v in pairs(game.Workspace:GetChildren()) do
+			if v:IsA("Model") then
+				for i,desc in pairs(v:GetDescendants()) do
+					if desc:IsA("ProximityPrompt") then
+						if desc.ActionText == "TAKE" then
+							for i,x in pairs(desc.Parent:GetChildren()) do
+								if x.Name == "ESPGUI" then
+									x:Destroy()
+								end
+							end
+						end
+					end
+				end 
+			end
+		end
+	else
+		for i,v in pairs(game.Workspace:GetChildren()) do
+			if v:IsA("Model") then
+				for i,desc in pairs(v:GetDescendants()) do
+					if desc:IsA("ProximityPrompt") then
+						if desc.ActionText == "TAKE" then
+							createESP(desc.Parent, Color3.new(1, 0.941176, 0.278431))
+						end
+					end
+				end 
+			end
+		end
+	end
+end
+
+function bagEsp(State)
+	if State == false then
+		for i,Bag in pairs(game.Workspace.Bags:GetChildren()) do
+			for i,Part in pairs(Bag:GetChildren()) do
+				for i,Item in pairs(Part:GetChildren()) do
+					if Item.Name == "ESPGUI" then
+						Item:Destroy()
+					end
+				end
+			end
+		end
+		Connections.BagESP:Disconnect()
+	else
+		for i,Body in pairs(game.Workspace.Bags:GetChildren()) do
+			createESP(Body.MoneyBag, Color3.new(0.25098, 0, 1))
+		end
+		Connections.BagESP = game.Workspace.Bags.ChildAdded:Connect(function(Body)
+			createESP(Body.MoneyBag, Color3.new(0.25098, 0, 1))
+		end)
+	end
+end
+
+function ItemESP(State)
+	if State == false then
+		for i,v in pairs(game.Workspace:GetChildren()) do
+			if v:IsA("Folder") then
+				for i,desc in pairs(v:GetDescendants()) do
+					if desc:IsA("ProximityPrompt") then
+						if desc.ActionText == "TAKE" then
+							for i,x in pairs(desc.Parent:GetChildren()) do
+								if x.Name == "ESPGUI" then
+									x:Destroy()
+								end
+							end
+						end
+					end
+				end 
+			end
+		end
+	else
+		for i,v in pairs(game.Workspace:GetChildren()) do
+			if v:IsA("Folder") then
+				for i,desc in pairs(v:GetDescendants()) do
+					if desc:IsA("ProximityPrompt") then
+						if desc.ActionText == "TAKE" then
+							createESP(desc.Parent, Color3.new(1, 0.415686, 0.992157))
+						end
+					end
+				end 
+			end
+		end
+	end
+end
+function CameraESP(State)
+	if State == false then
+		for i,Camera in pairs(game.Workspace.Cameras:GetChildren()) do
+			for i,Part in pairs(Camera:GetDescendants()) do
+				for i,Object in pairs(Part:GetChildren()) do
+					if Object.Name == "ESPGUI" then
+						Object:Destroy()
+					end
+				end
+			end 
+		end
+	else
+		for i,Camera in pairs(game.Workspace.Cameras:GetChildren()) do
+			for i,Part in pairs(Camera:GetChildren()) do
+				if Part:IsA("MeshPart") then
+					createESP(Part, Color3.new(0, 0.984314, 1))
+				end
+			end
+		end
+	end
+end
+
+function BodyESP(State)
+	if State == false then
+		for i,Officer in pairs(game.Workspace.Bodies:GetChildren()) do
+			for i,Part in pairs(Officer:GetChildren()) do
+				for i,Item in pairs(Part:GetChildren()) do
+					if Item.Name == "ESPGUI" then
+						Item:Destroy()
+					end
+				end
+			end
+		end
+		Connections.BodyESP:Disconnect()
+	else
+		for i,Body in pairs(game.Workspace.Bodies:GetChildren()) do
+			for i,Part in pairs(Body:GetChildren()) do
+				if Part:IsA("Part") or Part:IsA("BasePart") then
+					if Body.Name == "Guard" then
+						createESP(Part, Color3.new(0.223529, 0, 0))
+					elseif Body.Name == "Citizen" then
+						createESP(Part, Color3.new(0, 0.290196, 0.0156863))
+					end
+				end
+			end
+		end
+		Connections.BodyESP = game.Workspace.Bodies.ChildAdded:Connect(function(Body)
+			Body:WaitForChild("HumanoidRootPart")
+			for i,Part in pairs(Body:GetChildren()) do
+				if Part:IsA("Part") or Part:IsA("BasePart") then
+					if Body.Name == "Guard" then
+						createESP(Part, Color3.new(0.223529, 0, 0))
+					elseif Body.Name == "Citizen" then
+						createESP(Part, Color3.new(0, 0.290196, 0.0156863))
+					end
+				end
+			end
+		end)
+	end
+end
+
+
+function nightclubFarm()
+	repeat wait() until RealCharacter
+	game:GetService("ReplicatedStorage")["RS_Package"].Remotes.PlayerReady:FireServer("Class 2")
+	game:GetService("ReplicatedStorage")["RS_Package"].Remotes.PlayerReady:FireServer("Class 2", true)
+	wait(15)
+	game.ReplicatedStorage.RS_Package.Assets.Remotes.MaskOn:FireServer()
+	wait(0.5)
+	local BagSecuringPosition = game.Workspace.BagSecuredArea.EscapeVan.Main.CFrame
+	local Safes = {}
+	for i,Safe in pairs(game.Workspace.Map:GetChildren()) do
+		if Safe.Name == "Safe" then
+			table.insert(Safes, Safe)
+		end
+	end
+	local Safe = Safes[1]
+	RealCharacter.HumanoidRootPart.CFrame = Safe.MiniSafe.InsertDrill.CFrame
+	wait(0.15)
+	fireproximityprompt(Safe.MiniSafe.InsertDrill.ProximityPromptPickLock, 0.25)
+	wait(0.15)
+	Safe:WaitForChild("Coke"):WaitForChild("Cola"):WaitForChild("ProximityPrompt")
+	print("K")
+	fireproximityprompt(Safe.Coke.Cola.ProximityPrompt)
+	wait(0.1)
+	TweenTP(BagSecuringPosition)
+	wait(0.25)
+	game:GetService("ReplicatedStorage")["RS_Package"].Remotes.ThrowBag:FireServer(Vector3.new(0, 0, 0))
+	wait(1)
+
+	Safe = Safes[2]
+	--TweenTP(Safe.MiniSafe.InsertDrill.CFrame)
+	RealCharacter.HumanoidRootPart.CFrame = Safe.MiniSafe.InsertDrill.CFrame
+	wait(0.15)
+	fireproximityprompt(Safe.MiniSafe.InsertDrill.ProximityPromptPickLock, 0.25)
+	wait(0.15)
+	Safe:WaitForChild("Coke"):WaitForChild("Cola"):WaitForChild("ProximityPrompt")
+	print("K")
+	fireproximityprompt(Safe.Coke.Cola.ProximityPrompt)
+	wait(0.1)
+	TweenTP(BagSecuringPosition)
+	wait(0.25)
+	game:GetService("ReplicatedStorage")["RS_Package"].Remotes.ThrowBag:FireServer(Vector3.new(0, 0, 0))
+	wait(1)
+	wait(15)
+	--game:GetService("ReplicatedStorage").RS_Package.Remotes.VoteReset:FireServer()
+end
+
+local Library = loadstring(game:HttpGet("https://pastebin.com/raw/6W1ZqV53"))()
+
+local w = Library:Window("ESPs")
+
+w:Toggle("Police/Guard ESP", function(v)
+	PoliceESP(v)
+end)
+w:Toggle("Civilian ESP", function(v)
+	CitizenESP(v)
+end)
+w:Toggle("Loot ESP", function(v)
+	lootEsp(v)
+end)
+w:Toggle("Item ESP", function(v)
+	ItemESP(v)
+end)
+w:Toggle("Bag ESP", function(v)
+	bagEsp(v)
+end)
+w:Toggle("Body ESP", function(v)
+	BodyESP(v)
+end)
+w:Toggle("Camera ESP", function(v)
+	CameraESP(v)
+end)
