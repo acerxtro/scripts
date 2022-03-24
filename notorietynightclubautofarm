@@ -1,0 +1,271 @@
+local queueteleport = syn and syn.queue_on_teleport
+game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
+	if State == Enum.TeleportState.Started then
+		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()")
+	end
+end)
+
+local faces = {"Front","Back","Bottom","Left","Right","Top"}
+local RealCharacter = game.Workspace.Criminals[game.Players.LocalPlayer.Name]
+local BagSecuringPosition = game.Workspace.BagSecuredArea.EscapeVan.Main.CFrame
+local Connections = {}
+
+function TweenTP(cf)
+	local dis = (RealCharacter.Torso.Position - cf.p).Magnitude
+	local Time = 2
+	local tweenService = game:GetService("TweenService")
+	local tweenInfo = TweenInfo.new(Time, Enum.EasingStyle.Linear)
+	local tween = tweenService:Create(RealCharacter.HumanoidRootPart, tweenInfo, {CFrame = cf})
+	tween:Play()
+	tween.Completed:Wait()
+end
+
+function createESP(Part, Color)
+	if Part.Name == "HumanoidRootPart" then
+		return
+	end
+	for i = 1, #faces do
+		local SurfaceGUI = Instance.new("SurfaceGui", Part)
+		SurfaceGUI.Name = "ESPGUI"
+		SurfaceGUI.Face = Enum.NormalId[faces[i]]
+		SurfaceGUI.AlwaysOnTop = true
+
+		local Frame = Instance.new("Frame", SurfaceGUI)
+		Frame.Size = UDim2.new(1,0,1,0)
+		Frame.BorderSizePixel = 0												
+		Frame.BackgroundTransparency = 0.3
+		Frame.BackgroundColor3 = Color
+	end
+end
+
+function addClass(Part, Image)
+	for i = 1, #faces do
+		local ImageLabel = Instance.new("Frame")
+		ImageLabel.Parent = Part:WaitForChild("ESPGUI")
+		ImageLabel.Size = UDim2.new(1,0,1,0)
+		ImageLabel.BorderSizePixel = 0												
+		ImageLabel.BackgroundTransparency = 1
+		ImageLabel.Image = Image
+	end
+end
+
+function checkForClass(Unit)
+	-- taser http://www.roblox.com/asset/?id=517843292
+	if Unit:FindFirstChild("Lanyard") then
+		addClass(Unit.Torso, "http://www.roblox.com/asset/?id=316094415")
+
+	end
+end
+
+
+function CitizenESP(State)
+	if State == false then
+		for i,Citizen in pairs(game.Workspace.Citizens:GetChildren()) do
+			if Citizen:FindFirstChild("ESPGUI") then
+				Citizen.ESPGUI:Destroy()
+			end
+		end
+		Connections.CitizenESP = nil
+	else
+		for i,Citizen in pairs(game.Workspace.Citizens:GetChildren()) do
+			for i,Part in pairs(Citizen:GetChildren()) do
+				if Part:IsA("Part") or Part:IsA("BasePart") then
+					createESP(Part, Color3.new(0.0156863, 1, 0))
+				end
+			end
+		end
+		Connections.CitizenESP = game.Workspace.Citizens.ChildAdded:Connect(function(Child)
+			Child:WaitForChild("HumanoidRootPart")
+			for i,Part in pairs(Child:GetChildren()) do
+				if Part:IsA("Part") or Part:IsA("BasePart") then
+					createESP(Part, Color3.new(0.0156863, 1, 0))
+				end
+			end
+		end)
+	end
+end
+
+function PoliceESP(State)
+	if State == false then
+		for i,Officer in pairs(game.Workspace.Police:GetChildren()) do
+			if Officer:FindFirstChild("ESPGUI") then
+				Officer.ESPGUI:Destroy()
+			end
+		end
+		Connections.PoliceESP = nil
+	else
+		for i,Officer in pairs(game.Workspace.Police:GetChildren()) do
+			for i,Part in pairs(Officer:GetChildren()) do
+				if Part:IsA("Part") or Part:IsA("BasePart") then
+					if Officer.Name == "Guard" then
+						createESP(Part, Color3.new(1, 0, 0.0156863))
+					else
+						createESP(Part, Color3.new(0, 0.0666667, 1))
+					end
+				end
+			end
+		end
+		Connections.PoliceESP = game.Workspace.Police.ChildAdded:Connect(function(Child)
+			Child:WaitForChild("HumanoidRootPart")
+			for i,Part in pairs(Child:GetChildren()) do
+				if Part:IsA("Part") or Part:IsA("BasePart") then
+					if Child.Name == "Guard" then
+						createESP(Part, Color3.new(1, 0, 0.0156863))
+					else
+						createESP(Part, Color3.new(0, 0.0666667, 1))
+					end
+				end
+			end
+		end)
+	end
+end
+
+function BodyESP(State)
+	if State == false then
+		for i,Body in pairs(game.Workspace.Bodies:GetChildren()) do
+			if Body:FindFirstChild("ESPGUI") then
+				Body.ESPGUI:Destroy()
+			end
+		end
+		Connections.BodyESP = nil
+	else
+		for i,Body in pairs(game.Workspace.Bodies:GetChildren()) do
+			for i,Part in pairs(Body:GetChildren()) do
+				if Part:IsA("Part") or Part:IsA("BasePart") then
+					if Body.Name == "Guard" then
+						createESP(Part, Color3.new(0.223529, 0, 0))
+					elseif Body.Name == "Citizen" then
+						createESP(Part, Color3.new(0, 0.290196, 0.0156863))
+					end
+				end
+			end
+		end
+		Connections.BodyESP = game.Workspace.Bodies.ChildAdded:Connect(function(Body)
+			Body:WaitForChild("HumanoidRootPart")
+			for i,Part in pairs(Body:GetChildren()) do
+				if Part:IsA("Part") or Part:IsA("BasePart") then
+					if Body.Name == "Guard" then
+						createESP(Part, Color3.new(0.223529, 0, 0))
+					elseif Body.Name == "Citizen" then
+						createESP(Part, Color3.new(0, 0.290196, 0.0156863))
+					end
+				end
+			end
+		end)
+	end
+end
+
+function GrabLootable(Lootable, Return)
+	if Lootable == "Keycard" then
+		local Object = game.Workspace.Map.KeyCard
+		local OriginalCFrame = RealCharacter.HumanoidRootPart.CFrame
+		RealCharacter.HumanoidRootPart.CFrame = Object.chain.CFrame
+		wait(0.1)
+		fireproximityprompt(Object.InteractionPart.ProximityPrompt)
+		if Return then
+			wait(0.1)
+			RealCharacter.HumanoidRootPart.CFrame = OriginalCFrame
+		end
+	elseif Lootable == "Money" then
+		local Object = game.Workspace.Lootables.Money.Bucks
+		local OriginalCFrame = RealCharacter.HumanoidRootPart.CFrame
+		RealCharacter.HumanoidRootPart.CFrame = Object.CFrame
+		wait(0.1)
+		fireproximityprompt(Object.ProximityPrompt)
+		if Return then
+			wait(0.1)
+			RealCharacter.HumanoidRootPart.CFrame = OriginalCFrame
+		end
+	elseif Lootable == "Cash Register" then
+		local Object = game.Workspace.Lootables["Cash Register"].Body
+		local OriginalCFrame = RealCharacter.HumanoidRootPart.CFrame
+		RealCharacter.HumanoidRootPart.CFrame = Object.CFrame
+		wait(0.1)
+		fireproximityprompt(Object.ProximityPrompt)
+		if Return then
+			wait(0.1)
+			RealCharacter.HumanoidRootPart.CFrame = OriginalCFrame
+		end
+	end
+end
+function pickSafeLock(Safe)
+	RealCharacter.HumanoidRootPart.CFrame = Safe.MiniSafe.InsertDrill.CFrame
+	wait(0.1)
+	fireproximityprompt(Safe.MiniSafe.InsertDrill.ProximityPromptPickLock, 0.25)
+end
+function drillSafes()
+	for i,Object in pairs(game.Workspace.Map:GetChildren()) do
+		if Object.Name == "Safe" then
+			fireproximityprompt(Object.MiniSafe.InsertDrill.ProximityPrompt, 0.25)
+		end
+	end
+end
+
+function nightclubFarm()	
+	local Safes = {}
+	for i,Safe in pairs(game.Workspace.Map:GetChildren()) do
+		if Safe.Name == "Safe" then
+			table.insert(Safes, Safe)
+		end
+	end
+	local Safe = Safes[1]
+	RealCharacter.HumanoidRootPart.CFrame = Safe.MiniSafe.InsertDrill.CFrame
+	wait(0.15)
+	fireproximityprompt(Safe.MiniSafe.InsertDrill.ProximityPromptPickLock, 0.25)
+	wait(0.15)
+	Safe:WaitForChild("Coke"):WaitForChild("Cola"):WaitForChild("ProximityPrompt")
+	print("K")
+	fireproximityprompt(Safe.Coke.Cola.ProximityPrompt)
+	wait(0.1)
+	TweenTP(BagSecuringPosition)
+	wait(0.25)
+	game:GetService("ReplicatedStorage")["RS_Package"].Remotes.ThrowBag:FireServer(Vector3.new(0, 0, 0))
+	wait(1)
+
+	Safe = Safes[2]
+	--TweenTP(Safe.MiniSafe.InsertDrill.CFrame)
+	RealCharacter.HumanoidRootPart.CFrame = Safe.MiniSafe.InsertDrill.CFrame
+	wait(0.15)
+	fireproximityprompt(Safe.MiniSafe.InsertDrill.ProximityPromptPickLock, 0.25)
+	wait(0.15)
+	Safe:WaitForChild("Coke"):WaitForChild("Cola"):WaitForChild("ProximityPrompt")
+	print("K")
+	fireproximityprompt(Safe.Coke.Cola.ProximityPrompt)
+	wait(0.1)
+	TweenTP(BagSecuringPosition)
+	wait(0.25)
+	game:GetService("ReplicatedStorage")["RS_Package"].Remotes.ThrowBag:FireServer(Vector3.new(0, 0, 0))
+	wait(1)
+end
+
+function GrabLootables()
+	local OriginalCFrame = RealCharacter.HumanoidRootPart.CFrame
+	for i,Object in pairs(game.Workspace.Lootables:GetChildren()) do
+		GrabLootable(Object.Name)
+		wait(0.1)
+	end
+	RealCharacter.HumanoidRootPart.CFrame = OriginalCFrame
+end
+
+PoliceESP(true)
+CitizenESP(true)
+--GrabLootable("Keycard")
+--GrabLootables()
+--grabBagAndThrow()
+-- Script generated by SimpleSpy - credits to exx#9394
+-- Script generated by SimpleSpy - credits to exx#9394
+
+local button = game.Players.LocalPlayer.PlayerGui.SG_Package.MainGui.PregameFrame.button_playerReady --path to button here
+
+local events = {"MouseButton1Click", "MouseButton1Down", "Activated"}
+for i,v in pairs(events) do
+	for i,v in pairs(getconnections(button[v])) do
+		v:Fire()
+	end
+end
+wait(12)
+game.ReplicatedStorage.RS_Package.Assets.Remotes.MaskOn:FireServer()
+wait(0.5)
+nightclubFarm()
+wait(15)
+game:GetService("ReplicatedStorage").RS_Package.Remotes.VoteReset:FireServer()
