@@ -1,7 +1,7 @@
 local queueteleport = syn and syn.queue_on_teleport
 game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
 	if State == Enum.TeleportState.Started then
-		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()")
+		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/acergamer123141/scripts/main/notorietynightclubautofarm'))()")
 	end
 end)
 
